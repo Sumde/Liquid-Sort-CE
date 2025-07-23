@@ -121,7 +121,7 @@ int main(void) {
 
     int tick = 0;
 
-    while (true) {
+    while (current_level<7) {
         kb_Scan();
         tick++;
 
