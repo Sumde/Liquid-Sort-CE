@@ -1,11 +1,6 @@
-### CE C/C++ Toolchain Template
+### Liquid Sort CE!
 
-This is a template for programs that use the [TI-84 Plus CE C/C++ Toolchain](https://github.com/CE-Programming/toolchain).
-You can clone this directory for your own projects.
-Note that for graphical programs, it is recommended to start from the [graphx template](https://github.com/CE-Programming/graphx-template) instead of this one.
+In this game (for the TI-84 Plus CE calculator) you take different liquids from glasses, and move them until you are able to get all the glasses sorted with the correct liquids!
 
-To add code, fill in the `int main(void)` function in main.c. You can also create
-your own source and header files and add them to the directory; the makefile
-will automatically find and compile the new source files.
-
-For more information, see the [toolchain's documentation](https://ce-programming.github.io/toolchain/index.html).
+## Instructions:
+Use the left and right arrow keys to change which glass to select, then press "2nd" to select a glass, and press "2nd" again on another glass to pour the liquid your selected glass into the other glass you just clicked.
