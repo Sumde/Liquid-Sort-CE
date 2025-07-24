@@ -3,55 +3,27 @@
 #include <math.h>
 #include <sys/timers.h>
 #include <ti/screen.h>
+#include <ti/getkey.h>
+#include "levels.h"
 
 // VIEWERS NOTE: I kinda have trouble with not spamming conditionals everywhere :P
-
-int bottle_levels[7][4][4] = {{{0,0,0,0},
-                            {0,0,1,1},
-                            {0,0,1,1},
-                            {0,0,0,0}},
-
-                            {{0,2,2,2},
-                            {0,0,1,2},
-                            {0,0,1,1},
-                            {0,0,0,1}},
-
-                            {{0,3,3,3},
-                            {2,2,1,2},
-                            {0,0,1,1},
-                            {0,1,2,3}},
-
-                            {{0,0,0,0},
-                            {1,1,2,3},
-                            {1,2,3,2},
-                            {3,3,2,1}},
-
-                            {{0,2,2,3},
-                            {2,1,3,2},
-                            {0,0,3,3},
-                            {0,1,1,1}},
-
-                            {{0,0,0,0},
-                            {2,1,2,3},
-                            {3,3,2,3},
-                            {1,1,1,2}},
-
-                            {{0,0,1,1},
-                            {0,0,2,3},
-                            {3,3,2,3},
-                            {1,2,1,2}}}; // Bottle levels here!
 
 // Don't change these.
 int current_level = 0;
 int highlighted_bottle = 0;
 int selected_bottle = -1;
+int num_bottles = 4;
 
-int current_bottles[4][4] = {{0,0,0,0},
+int current_bottles[8][4] = {{0,0,1,1},
                             {0,0,1,1},
-                            {0,0,1,1},
-                            {0,0,0,0}}; // The current bottle levels that can be changed at any time.
+                            {-1,-1,-1,-1},
+                            {-1,-1,-1,-1},
+                            {-1,-1,-1,-1},
+                            {-1,-1,-1,-1},
+                            {-1,-1,-1,-1},
+                            {-1,-1,-1,-1}}; // The current bottle levels that can be changed at any time.
 
-int bottle_colors[4] = {0x94, 0xE0, 0x07, 0x18}; // Colour of each level.
+int bottle_colors[7] = {0x94, 0xE0, 0x07, 0x18, 0xE3, 0xF8, 0x00}; // Colour of each level.
 
 int trunc_mod(int a, int b) {
     return ((a % b) + b) % b; // This does modulos on negative nums.
@@ -76,38 +48,90 @@ void draw() {
 
     int win_count = 0;
 
-    for (int i = 0; i<4; i++) {
-        gfx_SetColor(0x94); // Grayish colour.
-        gfx_FillRectangle((i+1)*64-16, 64, 34, 120);
-        gfx_FillRectangle((i+1)*64-22, 64, 46, 4);
-        gfx_SetColor(0xF8);
-        if (selected_bottle==i) {
-            gfx_Rectangle((i+1)*64-26, 59, 54, 130);
+    num_bottles = 0;
+
+    for (int i = 0; i<8; i++) {
+        if (bottle_levels[current_level][i][0]!=-1) {
+            num_bottles++;
         }
-        gfx_SetColor(0x00);
-        if (i==highlighted_bottle) {
-            gfx_Rectangle((i+1)*64-26, 59, 54, 130);
-        }
-        for (int j = 0; j<4; j++) {
-            gfx_SetColor(bottle_colors[current_bottles[i][j]]);
-            gfx_FillRectangle((i+1)*64-12, 68+(j*28), 26, 28);
-            if (bottle_colors[current_bottles[i][j]]==bottle_colors[current_bottles[i][0]]) {
-                win_count++;
+    }
+
+    for (int i = 0; i<num_bottles; i++) {
+        if (num_bottles<=4) {
+            gfx_SetColor(0x94); // Grayish colour.
+            gfx_FillRectangle((i+1)*64-16+(128-num_bottles*32), 64, 34, 120);
+            gfx_FillRectangle((i+1)*64-22+(128-num_bottles*32), 64, 46, 4);
+            gfx_SetColor(0xF8);
+            if (selected_bottle==i) {
+                gfx_Rectangle((i+1)*64-26+(128-num_bottles*32), 59, 54, 130);
+                gfx_Rectangle((i+1)*64-26+(128-num_bottles*32)-1, 58, 56, 132);
+            }
+            gfx_SetColor(0x00);
+            if (i==highlighted_bottle) {
+                gfx_Rectangle((i+1)*64-26+(128-num_bottles*32), 59, 54, 130);
+                gfx_Rectangle((i+1)*64-26+(128-num_bottles*32)-1, 58, 56, 132);
+            }
+            for (int j = 0; j<4; j++) {
+                gfx_SetColor(bottle_colors[current_bottles[i][j]]);
+                gfx_FillRectangle((i+1)*64-12+(128-num_bottles*32), 68+(j*28), 26, 28);
+                if (bottle_colors[current_bottles[i][j]]==bottle_colors[current_bottles[i][0]]) {
+                    win_count++;
+                }
+            }
+        } else {
+            gfx_SetColor(0x94);
+            if (i<4) {
+                gfx_FillRectangle((i+1)*64-16, 64, 17, 60);
+                gfx_FillRectangle((i+1)*64-19, 64, 23, 2);
+            } else {
+                gfx_FillRectangle((i-3)*64-16, 138, 17, 60);
+                gfx_FillRectangle((i-3)*64-19, 138, 23, 2);
+            }
+            gfx_SetColor(0xF8);
+            if (selected_bottle==i) {
+                if (i<4) {
+                    gfx_Rectangle((i+1)*64-21, 61, 27, 65);
+                    gfx_Rectangle((i+1)*64-21-1, 60, 29, 67);
+                } else {
+                    gfx_Rectangle((i-3)*64-21, 135, 27, 65);
+                    gfx_Rectangle((i-3)*64-21-1, 134, 29, 67);
+                }
+            }
+            gfx_SetColor(0x00);
+            if (i==highlighted_bottle) {
+                if (i<4) {
+                    gfx_Rectangle((i+1)*64-21, 61, 27, 65);
+                    gfx_Rectangle((i+1)*64-21-1, 60, 29, 67);
+                } else {
+                    gfx_Rectangle((i-3)*64-21, 135, 27, 65);
+                    gfx_Rectangle((i-3)*64-21-1, 134, 29, 67);
+                }
+            }
+            for (int j = 0; j<4; j++) {
+                gfx_SetColor(bottle_colors[current_bottles[i][j]]);
+                if (i<4) {
+                    gfx_FillRectangle((i+1)*64-14, 66+(j*14), 13, 14);
+                } else {
+                    gfx_FillRectangle((i-3)*64-14, 140+(j*14), 13, 14);
+                }
+                if (bottle_colors[current_bottles[i][j]]==bottle_colors[current_bottles[i][0]]) {
+                    win_count++;
+                }
             }
         }
     }
 
-    if (win_count==16) {
+    if (win_count==(4*num_bottles)) {
         gfx_SetTextFGColor(0xE0);
         gfx_SetTextScale(4,4);
         gfx_SetTextXY(52,104);
         gfx_PrintString("You won!");
     }
     gfx_SwapDraw();
-    if (win_count==16) {
+    if (win_count==(4*num_bottles)) {
         delay(2000);
         current_level++;
-        for (int i = 0; i<4; i++) {
+        for (int i = 0; i<8; i++) {
             for (int j = 0; j<4; j++) {
                 current_bottles[i][j] = bottle_levels[current_level][i][j];
             }
@@ -120,22 +144,31 @@ int main(void) {
 	gfx_SetDrawBuffer();
 
     int tick = 0;
+    int is_holding_key = 0;
 
-    while (current_level<7) {
+    while (current_level<num_bottle_levels) {
         kb_Scan();
         tick++;
 
-        if (tick%60==0) { //Slow down process so we don't SPAMMM keys.
+        if (tick%3==0) { //Slow down process so we don't crash da calc.
             draw(); 
 
-            if (kb_Data[7] & kb_Left) {
-                highlighted_bottle = trunc_mod(highlighted_bottle-1, 4);
-            } else if (kb_Data[7] & kb_Right) {
-                highlighted_bottle = (highlighted_bottle+1)%4;
-            } else if (kb_Data[1] & kb_2nd) {
+            if ((!(kb_Data[7] & (kb_Left | kb_Right)))) {
+                if ((!(kb_Data[1] & kb_2nd))) {
+                    is_holding_key = 0;
+                }
+            }
+
+            if (kb_Data[7] & kb_Left && is_holding_key==0) {
+                highlighted_bottle = trunc_mod(highlighted_bottle-1, num_bottles);
+                is_holding_key = 1;
+            } else if (kb_Data[7] & kb_Right && is_holding_key==0) {
+                highlighted_bottle = (highlighted_bottle+1)%num_bottles;
+                is_holding_key = 1;
+            } else if (kb_Data[1] & kb_2nd && is_holding_key==0) {
                 if (selected_bottle == -1) {
                     selected_bottle = highlighted_bottle;
-                    highlighted_bottle = (highlighted_bottle+1)%4;
+                    highlighted_bottle = (highlighted_bottle+1)%num_bottles;
                 } else if (selected_bottle == highlighted_bottle) {
                     selected_bottle = -1;
                 } else {
@@ -164,6 +197,7 @@ int main(void) {
                     }
                     selected_bottle = -1;
                 }
+                is_holding_key = 1;
             }
         }
 
